@@ -1,4 +1,5 @@
 const { ApolloServer, gql } = require('apollo-server')
+const uuid = require('uuid/v1')
 
 let authors = [
   {
@@ -17,20 +18,14 @@ let authors = [
     born: 1821
   },
   { 
-    name: 'Joshua Kerievsky', // birthyear not known
+    name: 'Joshua Kerievsky',
     id: "afa5b6f2-344d-11e9-a414-719c6709cf3e",
   },
   { 
-    name: 'Sandi Metz', // birthyear not known
+    name: 'Sandi Metz',
     id: "afa5b6f3-344d-11e9-a414-719c6709cf3e",
   },
 ]
-
-/*
- * It would be more sensible to associate book and author by saving 
- * the author id instead of the name to the book.
- * For simplicity we however save the author name.
-*/
 
 let books = [
   {
@@ -106,6 +101,15 @@ const typeDefs = gql`
     allBooks(author: String, genre: String): [Book!]!
     allAuthors: [Author!]!
   }
+
+  type Mutation {
+    addBook(
+      title: String!
+      author: String!
+      published: Int!
+      genres: [String!]
+    ): Book
+  }
 `
 
 const resolvers = {
@@ -129,6 +133,22 @@ const resolvers = {
       books.filter(book => 
         book.author === root.name
       ).length
+  },
+  Mutation: {
+    addBook: (root, args) => {
+      const book = { ...args, id: uuid() }
+      books = books.concat(book)
+      const author = authors.find(a => a.name === args.author)
+      if (!author) {
+        newAuthor = {
+          name: args.author,
+          id: uuid(),
+          born: null
+        }
+        authors = authors.concat(newAuthor)
+      }
+      return book
+    }
   }
 }
 
