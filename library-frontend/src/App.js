@@ -4,6 +4,7 @@ import { gql } from 'apollo-boost'
 import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
+import BornForm from './components/BornForm'
 
 const ALL_AUTHORS = gql`
 {
@@ -41,6 +42,18 @@ mutation createBook($title: String!, $author: String!, $published: Int!, $genres
 }
 `
 
+const UPDATE_BORN = gql`
+mutation updateBorn($name: String!, $setBornTo: Int!) {
+  editAuthor(
+    name: $name,
+    setBornTo: $setBornTo
+  ) {
+    name
+    born
+  }
+}
+`
+
 const App = () => {
   const [page, setPage] = useState('authors')
 
@@ -55,6 +68,18 @@ const App = () => {
       <Query query={ALL_AUTHORS}>
         {(result) => <Authors show={page === 'authors'} result={result} />}
       </Query>
+
+      <Mutation
+        mutation={UPDATE_BORN}
+        refetchQueries={[{ query: ALL_AUTHORS }]}
+      >
+        {(updateBorn) =>
+          <BornForm
+            show={page === 'authors'}
+            updateBorn={updateBorn}
+          />
+        }
+      </Mutation>
 
       <Query query={ALL_BOOKS}>
         {(result) => <Books show={page === 'books'} result={result} />}

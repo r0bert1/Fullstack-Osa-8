@@ -34,7 +34,6 @@ const Authors = ({ show, result }) => {
           )}
         </tbody>
       </table>
-
     </div>
   )
 }
