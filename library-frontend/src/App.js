@@ -69,20 +69,25 @@ const App = () => {
         {(result) => <Authors show={page === 'authors'} result={result} />}
       </Query>
 
-      <Mutation
-        mutation={UPDATE_BORN}
-        refetchQueries={[{ query: ALL_AUTHORS }]}
-      >
-        {(updateBorn) =>
-          <BornForm
-            show={page === 'authors'}
-            updateBorn={updateBorn}
-          />
-        }
-      </Mutation>
-
       <Query query={ALL_BOOKS}>
         {(result) => <Books show={page === 'books'} result={result} />}
+      </Query>
+
+      <Query query={ALL_AUTHORS}>
+        {(result) => 
+          <Mutation
+            mutation={UPDATE_BORN}
+            refetchQueries={[{ query: ALL_AUTHORS }]}
+          >
+            {(updateBorn) =>
+              <BornForm
+                show={page === 'authors'}
+                updateBorn={updateBorn}
+                result={result}
+              />
+            }
+          </Mutation>
+        }
       </Query>
 
       <Mutation
