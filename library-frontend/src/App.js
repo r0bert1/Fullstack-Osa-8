@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useMutation, useQuery, useApolloClient } from 'react-apollo'
 import { gql } from 'apollo-boost'
 import Authors from './components/Authors'
@@ -6,6 +6,7 @@ import Books from './components/Books'
 import NewBook from './components/NewBook'
 import BornForm from './components/BornForm'
 import Login from './components/Login'
+import Recommendations from './components/Recommendations'
 
 const ALL_AUTHORS = gql`
 {
@@ -26,6 +27,15 @@ const ALL_BOOKS = gql`
     }
     published
     genres
+  }
+}
+`
+
+const USER = gql`
+{
+  me {
+    username
+    favoriteGenre
   }
 }
 `
@@ -70,8 +80,16 @@ const App = () => {
   const [page, setPage] = useState('authors')
   const [token, setToken] = useState(null)
 
+  useEffect(() => {
+    const token = window.localStorage.getItem('user-token')
+    if (token) {
+      setToken(token)
+    }
+  }, [])
+
   const authors = useQuery(ALL_AUTHORS)
   const books = useQuery(ALL_BOOKS)
+  const user = useQuery(USER)
   const [updateBorn] = useMutation(UPDATE_BORN, {
     refetchQueries: [{ query: ALL_AUTHORS }]
   })
@@ -95,6 +113,7 @@ const App = () => {
         <button onClick={() => setPage('books')}>books</button>
         {!token && <button onClick={() => setPage('login')}>login</button>}
         {token && <button onClick={() => setPage('add')}>add book</button>}
+        {token && <button onClick={() => setPage('recommendations')}>recommended</button>}
         {token && <button onClick={() => logout()}>logout</button>}
       </div>
 
@@ -105,6 +124,8 @@ const App = () => {
       <Books show={page === 'books'} result={books} />
 
       <NewBook show={page === 'add'} addBook={addBook} />
+
+      <Recommendations show={page === 'recommendations'} userResult={user} booksResult={books} />
 
       <Login 
         show={page === 'login'} 
