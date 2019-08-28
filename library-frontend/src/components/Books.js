@@ -1,6 +1,13 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 
 const Books = ({ show, result }) => {
+  const [genre, setGenre] = useState('all')
+  const [books, setBooks] = useState([])
+
+  useEffect(() => {
+    setBooks(result.data.allBooks)
+  }, [result.data.allBooks])
+
   if (!show) {
     return null
   }
@@ -9,11 +16,30 @@ const Books = ({ show, result }) => {
     return <div>loading...</div>
   }
 
-  const books = result.data.allBooks
+  const allBooks = result.data.allBooks
+
+  const genres = allBooks.reduce((a, c) =>
+    a.concat(c.genres.filter(genre => !a.includes(genre)))
+  , [])
+
+  const filterBooks = (selectedGenre) => {
+    setGenre(selectedGenre)
+    if (selectedGenre === 'all') {
+      setBooks(allBooks)
+      return
+    }
+    const filtered = allBooks.filter(book => book.genres.includes(selectedGenre))
+    setBooks(filtered)
+  }
 
   return (
     <div>
       <h2>books</h2>
+
+      {(genre === 'all')
+        ? <p>all</p>
+        : <p>in genre {genre}</p>
+      }
 
       <table>
         <tbody>
@@ -35,6 +61,11 @@ const Books = ({ show, result }) => {
           )}
         </tbody>
       </table>
+
+      {genres.map(g =>
+        <button key={g} onClick={() => filterBooks(g)}>{g}</button>
+      )}
+      <button onClick={() => filterBooks('all')}>all genres</button>
     </div>
   )
 }

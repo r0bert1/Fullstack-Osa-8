@@ -25,6 +25,7 @@ const ALL_BOOKS = gql`
       name
     }
     published
+    genres
   }
 }
 `
@@ -111,7 +112,6 @@ const App = () => {
         setToken={(token) => setToken(token)}
         setPage={setPage}
       />
-
     </div>
   )
 }
