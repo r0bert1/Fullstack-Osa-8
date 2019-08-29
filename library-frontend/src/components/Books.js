@@ -2,9 +2,22 @@ import React, { useState, useEffect } from 'react'
 import { gql } from 'apollo-boost'
 import { useApolloClient } from 'react-apollo'
 
-const ALL_BOOKS = gql`
-query createBook($genre: String) {
+const BOOKS_BY_GENRE = gql`
+query booksByGenre($genre: String) {
   allBooks(genre: $genre) {
+    title
+    author {
+      name
+    }
+    published
+    genres
+  }
+}
+`
+
+const ALL_BOOKS = gql`
+{
+  allBooks {
     title
     author {
       name
@@ -24,13 +37,13 @@ const Books = ({ show }) => {
 
   const fetchBooks = async (selectedGenre) => {
     const { data } = await client.query({
-      query: ALL_BOOKS,
+      query: BOOKS_BY_GENRE,
       variables: { genre: selectedGenre }
     })
     setBooksToShow(data.allBooks)
   }
 
-  const fetchAll = async (selectedGenre) => {
+  const fetchAll = async () => {
     const { data } = await client.query({
       query: ALL_BOOKS
     })

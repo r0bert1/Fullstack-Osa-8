@@ -49,7 +49,9 @@ mutation createBook($title: String!, $author: String!, $published: Int!, $genres
     genres: $genres
   ) {
     title
-    author
+    author {
+      name
+    }
     published
     genres
   }
@@ -94,7 +96,15 @@ const App = () => {
     refetchQueries: [{ query: ALL_AUTHORS }]
   })
   const [addBook] = useMutation(CREATE_BOOK, {
-    refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }]
+    refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }],
+    update: (store, response) => {
+      const dataInStore = store.readQuery({ query: ALL_BOOKS })
+      dataInStore.allBooks.push(response.data.addBook)
+      store.writeQuery({
+        query: ALL_BOOKS, 
+        data: dataInStore
+      })
+    }
   })
   const [login] = useMutation(LOGIN)
   const client = useApolloClient()
