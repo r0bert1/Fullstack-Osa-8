@@ -1,35 +1,62 @@
 import React, { useState, useEffect } from 'react'
+import { gql } from 'apollo-boost'
+import { useApolloClient } from 'react-apollo'
 
-const Books = ({ show, result }) => {
+const ALL_BOOKS = gql`
+query createBook($genre: String) {
+  allBooks(genre: $genre) {
+    title
+    author {
+      name
+    }
+    published
+    genres
+  }
+}
+`
+
+const Books = ({ show }) => {
   const [genre, setGenre] = useState('all')
-  const [books, setBooks] = useState([])
+  const [allBooks, setAllBooks] = useState([])
+  const [booksToShow, setBooksToShow] = useState([])
+
+  const client = useApolloClient()
+
+  const fetchBooks = async (selectedGenre) => {
+    const { data } = await client.query({
+      query: ALL_BOOKS,
+      variables: { genre: selectedGenre }
+    })
+    setBooksToShow(data.allBooks)
+  }
+
+  const fetchAll = async (selectedGenre) => {
+    const { data } = await client.query({
+      query: ALL_BOOKS
+    })
+    setAllBooks(data.allBooks)
+    setBooksToShow(data.allBooks)
+  }
 
   useEffect(() => {
-    setBooks(result.data.allBooks)
-  }, [result.data.allBooks])
+    fetchAll()
+  }, [])
 
   if (!show) {
     return null
   }
 
-  if (result.loading) {
-    return <div>loading...</div>
-  }
-
-  const allBooks = result.data.allBooks
-
   const genres = allBooks.reduce((a, c) =>
     a.concat(c.genres.filter(genre => !a.includes(genre)))
   , [])
 
-  const filterBooks = (selectedGenre) => {
+  const filterBooks = async (selectedGenre) => {
     setGenre(selectedGenre)
     if (selectedGenre === 'all') {
-      setBooks(allBooks)
+      fetchAll()
       return
     }
-    const filtered = allBooks.filter(book => book.genres.includes(selectedGenre))
-    setBooks(filtered)
+    fetchBooks(selectedGenre)
   }
 
   return (
@@ -38,7 +65,7 @@ const Books = ({ show, result }) => {
 
       {(genre === 'all')
         ? <p>all</p>
-        : <p>in genre {genre}</p>
+        : <p>in genre <b>{genre}</b></p>
       }
 
       <table>
@@ -52,7 +79,7 @@ const Books = ({ show, result }) => {
               published
             </th>
           </tr>
-          {books.map(a =>
+          {booksToShow.map(a =>
             <tr key={a.title}>
               <td>{a.title}</td>
               <td>{a.author.name}</td>

@@ -44,7 +44,7 @@ const typeDefs = gql`
 
   type Token {
     value: String!
-  }  
+  }
 
   type Query {
     bookCount: Int!
@@ -80,7 +80,13 @@ const resolvers = {
   Query: {
     bookCount: () => Book.collection.countDocuments(),
     authorCount: () => Author.collection.countDocuments(),
-    allBooks: () => Book.find({}).populate('author'),
+    allBooks: async (root, args) => {
+      let allBooks = await Book.find({}).populate('author')
+      if (args.genre) {
+        return allBooks.filter(book => book.genres.includes(args.genre))
+      }
+      return allBooks
+    },
     allAuthors: () => Author.find({}),
     me: (root, args, context) => {
       return context.currentUser
